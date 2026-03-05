@@ -1,73 +1,35 @@
-import { TrendingUp, TrendingDown, Package, Truck, AlertTriangle, CheckCircle, CreditCard, Users } from 'lucide-react'
+import { ShoppingCart, TrendingUp, TrendingDown, Users, CheckCircle, Truck, XCircle } from 'lucide-react'
 
 const iconMap = {
-  orders: Package,
-  revenue: TrendingUp,
-  delivery: Truck,
-  cancel: AlertTriangle,
-  success: CheckCircle,
-  payment: CreditCard,
-  dealers: Users,
-  decline: TrendingDown,
+  orders: ShoppingCart, revenue: TrendingUp, decline: TrendingDown,
+  dealers: Users, success: CheckCircle, delivery: Truck, cancel: XCircle,
 }
 
-export default function KpiGrid({ data }) {
-  if (!data || data.length === 0) return null
-
+export default function KpiGrid({ data, isMobile }) {
+  if (!data?.length) return null
   return (
     <div style={{
       display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '12px',
-      marginBottom: '20px',
+      gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : `repeat(${Math.min(data.length, 4)}, 1fr)`,
+      gap: 8, marginBottom: 12,
     }}>
       {data.map((kpi, i) => {
-        const Icon = iconMap[kpi.icon] || Package
-        const accentColor = kpi.color || '#6366f1'
-
+        const Icon = iconMap[kpi.icon] || ShoppingCart
         return (
           <div key={i} style={{
-            background: '#171923',
-            borderRadius: '12px',
-            padding: '18px',
-            border: '1px solid #252840',
-            borderLeft: `3px solid ${accentColor}`,
-            transition: 'border-color 0.2s, background 0.2s',
+            background: 'var(--bg-card)', border: '1px solid var(--border-subtle)',
+            borderRadius: 'var(--radius-sm)', padding: isMobile ? '10px' : '10px 12px',
           }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '10px',
-            }}>
-              <span style={{
-                fontSize: '0.72rem',
-                color: '#5c6078',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                fontWeight: '600',
-              }}>
-                {kpi.label}
-              </span>
-              <Icon size={16} color={accentColor} />
-            </div>
-            <div style={{
-              fontSize: '1.6rem',
-              fontWeight: '700',
-              color: '#e8e9ed',
-              marginBottom: '4px',
-              fontFamily: 'JetBrains Mono, monospace',
-            }}>
-              {kpi.value}
-            </div>
-            {kpi.sub && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
               <div style={{
-                fontSize: '0.78rem',
-                color: '#5c6078',
-              }}>
-                {kpi.sub}
-              </div>
-            )}
+                width: 22, height: 22, borderRadius: 6,
+                background: (kpi.color || '#0d9264') + '12',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}><Icon size={11} color={kpi.color || '#0d9264'} /></div>
+              <span style={{ fontSize: 10, color: 'var(--text-muted)', fontWeight: 500 }}>{kpi.label}</span>
+            </div>
+            <div style={{ fontSize: isMobile ? 16 : 18, fontWeight: 700, color: 'var(--text-primary)' }}>{kpi.value}</div>
+            {kpi.sub && <div style={{ fontSize: 10, color: 'var(--text-muted)', marginTop: 2 }}>{kpi.sub}</div>}
           </div>
         )
       })}

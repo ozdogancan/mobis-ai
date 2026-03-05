@@ -8,19 +8,13 @@ export default function App() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check current session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
     })
-
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session)
-      }
+      (_event, session) => { setSession(session) }
     )
-
     return () => subscription.unsubscribe()
   }, [])
 
@@ -28,10 +22,19 @@ export default function App() {
     return (
       <div style={{
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        height: '100vh', background: '#0a0b0f', color: '#6366f1',
-        fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem'
+        height: '100vh', background: '#f4f5f7',
       }}>
-        Yükleniyor...
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 14,
+            background: 'linear-gradient(135deg, #0d9264, #0d9488)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 16px', fontSize: 22, fontWeight: 700, color: '#fff',
+            animation: 'pulse-logo 2s ease-in-out infinite',
+          }}>M</div>
+          <div style={{ color: '#8b939f', fontSize: 14 }}>Yükleniyor...</div>
+        </div>
+        <style>{`@keyframes pulse-logo { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.05);opacity:.8} }`}</style>
       </div>
     )
   }

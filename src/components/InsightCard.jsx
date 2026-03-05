@@ -1,50 +1,23 @@
-import { AlertTriangle, CheckCircle, Info, Lightbulb } from 'lucide-react'
+import { AlertTriangle, AlertCircle, CheckCircle, Info, Lightbulb } from 'lucide-react'
 
-const typeConfig = {
-  critical: { icon: AlertTriangle, color: '#ef4444', bg: '#ef444415', border: '#ef444440' },
-  warning: { icon: AlertTriangle, color: '#f59e0b', bg: '#f59e0b15', border: '#f59e0b40' },
-  success: { icon: CheckCircle, color: '#22c55e', bg: '#22c55e15', border: '#22c55e40' },
-  info: { icon: Info, color: '#6366f1', bg: '#6366f115', border: '#6366f140' },
-  recommendation: { icon: Lightbulb, color: '#f59e0b', bg: '#f59e0b10', border: '#f59e0b30' },
+const config = {
+  critical: { icon: AlertTriangle, color: '#dc2626', bg: '#fef2f2', border: '#fecaca' },
+  warning: { icon: AlertCircle, color: '#d97706', bg: '#fffbeb', border: '#fde68a' },
+  success: { icon: CheckCircle, color: '#059669', bg: '#f0fdf4', border: '#bbf7d0' },
+  info: { icon: Info, color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe' },
+  recommendation: { icon: Lightbulb, color: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe' },
 }
 
-export default function InsightCard({ type = 'info', title, description }) {
-  const config = typeConfig[type] || typeConfig.info
-  const Icon = config.icon
-
+export default function InsightCard({ type, title, description }) {
+  const c = config[type] || config.info
+  const Icon = c.icon
   return (
-    <div style={{
-      background: config.bg,
-      border: `1px solid ${config.border}`,
-      borderLeft: `3px solid ${config.color}`,
-      borderRadius: '10px',
-      padding: '16px 18px',
-      marginBottom: '10px',
-    }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '12px',
-      }}>
-        <Icon size={18} color={config.color} style={{ marginTop: '2px', flexShrink: 0 }} />
-        <div>
-          <div style={{
-            fontSize: '0.9rem',
-            fontWeight: '600',
-            color: config.color,
-            marginBottom: '4px',
-          }}>
-            {title}
-          </div>
-          <div style={{
-            fontSize: '0.85rem',
-            color: '#8b8fa3',
-            lineHeight: '1.5',
-          }}>
-            {description}
-          </div>
-        </div>
+    <div style={{ background: c.bg, border: `1px solid ${c.border}`, borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+        <Icon size={13} color={c.color} />
+        <span style={{ fontSize: 12, fontWeight: 600, color: c.color }}>{title}</span>
       </div>
+      <div style={{ fontSize: 12, color: '#3d4654', lineHeight: 1.55, paddingLeft: 19 }}>{description}</div>
     </div>
   )
 }

@@ -1,38 +1,57 @@
-@import "tailwindcss";
-
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 
 :root {
-  --bg-primary: #0a0b0f;
-  --bg-secondary: #12141c;
-  --bg-card: #171923;
-  --bg-hover: #1e2133;
-  --border: #252840;
-  --text-primary: #e8e9ed;
-  --text-secondary: #8b8fa3;
-  --text-muted: #5c6078;
-  --accent: #6366f1;
-  --accent-glow: #818cf833;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
+  --bg-base: #f4f5f7;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-elevated: #f0f1f3;
+  --bg-hover: #f0fdf4;
+
+  --border-subtle: #e2e4e9;
+  --border-default: #d0d3d9;
+  --border-strong: #9ca3af;
+
+  --text-primary: #0f1419;
+  --text-secondary: #3d4654;
+  --text-muted: #8b939f;
+
+  --accent: #0d9264;
+  --accent-hover: #0a7b54;
+  --accent-muted: #0d926412;
+  --accent-glow: #0d926408;
+  --accent-light: #ecfdf5;
+  --accent-border: #a7f3d0;
+
+  --success: #059669;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #2563eb;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Outfit', sans-serif;
-  background: var(--bg-primary);
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg-base);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-default); border-radius: 2px; }
+::selection { background: var(--accent-muted); color: var(--accent); }
+input::placeholder { color: var(--text-muted); }
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+}

@@ -4,212 +4,72 @@ import { supabase } from '../lib/supabase'
 export default function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      setError('E-posta veya şifre hatalı')
-    }
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) setError(error.message)
     setLoading(false)
+  }
+
+  const inputStyle = {
+    width: '100%', padding: '11px 14px', borderRadius: 10,
+    border: '1px solid var(--border-subtle)', fontSize: 14, outline: 'none',
+    fontFamily: 'inherit', color: 'var(--text-primary)', background: '#f9fafb',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
   }
 
   return (
     <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0a0b0f 0%, #12141c 50%, #0f1018 100%)',
-      padding: '20px',
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'var(--bg-base)', padding: 20,
     }}>
-      {/* Background glow */}
       <div style={{
-        position: 'fixed',
-        top: '20%',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '600px',
-        height: '600px',
-        background: 'radial-gradient(circle, #6366f115 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{
-        width: '100%',
-        maxWidth: '420px',
-        position: 'relative',
+        width: '100%', maxWidth: 360, background: 'var(--bg-surface)', borderRadius: 16,
+        border: '1px solid var(--border-subtle)', padding: '32px 28px',
+        boxShadow: 'var(--shadow-lg)',
       }}>
-        {/* Logo */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
           <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '64px',
-            height: '64px',
-            borderRadius: '16px',
-            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-            marginBottom: '20px',
-            fontSize: '28px',
-            fontWeight: '700',
-            color: '#fff',
-            boxShadow: '0 8px 32px #6366f133',
-          }}>
-            M
-          </div>
-          <h1 style={{
-            fontSize: '1.75rem',
-            fontWeight: '600',
-            color: '#e8e9ed',
-            marginBottom: '8px',
-            fontFamily: 'Outfit, sans-serif',
-            letterSpacing: '-0.02em',
-          }}>
-            Mobis AI
-          </h1>
-          <p style={{
-            color: '#5c6078',
-            fontSize: '0.95rem',
-            fontFamily: 'Outfit, sans-serif',
-          }}>
-            Akıllı Saha Yönetim Platformu
-          </p>
+            width: 44, height: 44, borderRadius: 12,
+            background: 'linear-gradient(135deg, #0d9264, #0d9488)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            margin: '0 auto 12px', fontSize: 20, fontWeight: 700, color: '#fff',
+          }}>M</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--text-primary)' }}>MOBİS NG</div>
+          <div style={{ fontSize: 11, color: 'var(--text-muted)', letterSpacing: 1, marginTop: 2 }}>AI PLATFORM</div>
         </div>
 
-        {/* Login Card */}
-        <form onSubmit={handleLogin} style={{
-          background: '#171923',
-          borderRadius: '16px',
-          padding: '36px',
-          border: '1px solid #252840',
-        }}>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>E-posta</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ornek@yildizholding.com" style={inputStyle}
+              onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px var(--accent-muted)' }}
+              onBlur={(e) => { e.target.style.borderColor = 'var(--border-subtle)'; e.target.style.boxShadow = 'none' }}
+            />
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Şifre</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" style={inputStyle}
+              onFocus={(e) => { e.target.style.borderColor = 'var(--accent)'; e.target.style.boxShadow = '0 0 0 3px var(--accent-muted)' }}
+              onBlur={(e) => { e.target.style.borderColor = 'var(--border-subtle)'; e.target.style.boxShadow = 'none' }}
+            />
+          </div>
           {error && (
-            <div style={{
-              background: '#ef444420',
-              border: '1px solid #ef444440',
-              borderRadius: '10px',
-              padding: '12px 16px',
-              marginBottom: '20px',
-              color: '#fca5a5',
-              fontSize: '0.88rem',
-              fontFamily: 'Outfit, sans-serif',
-            }}>
-              {error}
-            </div>
+            <div style={{ fontSize: 12, color: '#dc2626', background: '#fef2f2', padding: '8px 12px', borderRadius: 8, marginBottom: 14, border: '1px solid #fecaca' }}>{error}</div>
           )}
-
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{
-              display: 'block',
-              color: '#8b8fa3',
-              fontSize: '0.85rem',
-              marginBottom: '8px',
-              fontFamily: 'Outfit, sans-serif',
-              fontWeight: '500',
-            }}>
-              E-posta
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ornek@yildzholding.com"
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: '#0a0b0f',
-                border: '1px solid #252840',
-                borderRadius: '10px',
-                color: '#e8e9ed',
-                fontSize: '0.95rem',
-                fontFamily: 'Outfit, sans-serif',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-              onBlur={(e) => e.target.style.borderColor = '#252840'}
-            />
-          </div>
-
-          <div style={{ marginBottom: '28px' }}>
-            <label style={{
-              display: 'block',
-              color: '#8b8fa3',
-              fontSize: '0.85rem',
-              marginBottom: '8px',
-              fontFamily: 'Outfit, sans-serif',
-              fontWeight: '500',
-            }}>
-              Şifre
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: '#0a0b0f',
-                border: '1px solid #252840',
-                borderRadius: '10px',
-                color: '#e8e9ed',
-                fontSize: '0.95rem',
-                fontFamily: 'Outfit, sans-serif',
-                outline: 'none',
-                transition: 'border-color 0.2s',
-              }}
-              onFocus={(e) => e.target.style.borderColor = '#6366f1'}
-              onBlur={(e) => e.target.style.borderColor = '#252840'}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: '100%',
-              padding: '13px',
-              background: loading ? '#4f46e5' : 'linear-gradient(135deg, #6366f1, #7c3aed)',
-              border: 'none',
-              borderRadius: '10px',
-              color: '#fff',
-              fontSize: '1rem',
-              fontWeight: '600',
-              fontFamily: 'Outfit, sans-serif',
-              cursor: loading ? 'wait' : 'pointer',
-              transition: 'opacity 0.2s, transform 0.1s',
-              opacity: loading ? 0.7 : 1,
-              boxShadow: '0 4px 20px #6366f133',
-            }}
-            onMouseOver={(e) => { if (!loading) e.target.style.opacity = '0.9' }}
-            onMouseOut={(e) => { if (!loading) e.target.style.opacity = '1' }}
-          >
+          <button type="submit" disabled={loading} style={{
+            width: '100%', padding: 12, borderRadius: 10, border: 'none',
+            background: loading ? '#86efac' : 'var(--accent)', color: '#fff',
+            fontSize: 14, fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: 'inherit',
+          }}>
             {loading ? 'Giriş yapılıyor...' : 'Giriş Yap'}
           </button>
         </form>
-
-        <p style={{
-          textAlign: 'center',
-          marginTop: '24px',
-          color: '#5c6078',
-          fontSize: '0.8rem',
-          fontFamily: 'Outfit, sans-serif',
-        }}>
-          Yıldız Holding — A-Team SFA Platform
-        </p>
       </div>
     </div>
   )
