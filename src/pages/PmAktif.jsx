@@ -15,6 +15,48 @@ const SMART_CHIPS = [
   { id: 'kategori', label: '📦 Kategoriler', prompt: 'Kategori bazlı ciro dağılımını göster' },
 ]
 
+// ============================================================
+// DATE PARSER - Extract date filters from Turkish queries
+// ============================================================
+function parseDateFilter(query) {
+  const q = query.toLowerCase()
+  const months = {'ocak':'01','şubat':'02','mart':'03','nisan':'04','mayıs':'05','haziran':'06','temmuz':'07','ağustos':'08','eylül':'09','ekim':'10','kasım':'11','aralık':'12'}
+  
+  // "8 ocak" or "sadece 8 ocak" → single day
+  const singleDay = q.match(/(?:sadece\s+)?(\d{1,2})\s+(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/i)
+  if (singleDay) {
+    const day = singleDay[1].padStart(2, '0')
+    const mon = months[singleDay[2].toLowerCase()]
+    if (mon) return { type: 'single', date: `2026-${mon}-${day}`, label: `${singleDay[1]} ${singleDay[2].charAt(0).toUpperCase() + singleDay[2].slice(1)} 2026` }
+  }
+
+  // "8-15 ocak" or "8 ile 15 ocak arası" → range
+  const range = q.match(/(\d{1,2})\s*[-–]\s*(\d{1,2})\s+(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/i)
+  if (range) {
+    const d1 = range[1].padStart(2, '0'), d2 = range[2].padStart(2, '0')
+    const mon = months[range[3].toLowerCase()]
+    if (mon) return { type: 'range', from: `2026-${mon}-${d1}`, to: `2026-${mon}-${d2}`, label: `${range[1]}-${range[2]} ${range[3].charAt(0).toUpperCase() + range[3].slice(1)} 2026` }
+  }
+
+  // "ilk hafta", "son hafta"
+  if (q.includes('ilk hafta')) return { type: 'range', from: '2026-01-07', to: '2026-01-13', label: 'İlk Hafta (7-13 Ocak)' }
+  if (q.includes('son hafta')) return { type: 'range', from: '2026-01-20', to: '2026-01-31', label: 'Son Hafta (20-31 Ocak)' }
+
+  return null
+}
+
+function filterOrdersByDate(orders, dateFilter) {
+  if (!dateFilter) return orders
+  return orders.filter(o => {
+    const d = o.siparis_tarihi || o.created_at
+    if (!d) return false
+    const orderDate = d.substring(0, 10) // "2026-01-08"
+    if (dateFilter.type === 'single') return orderDate === dateFilter.date
+    if (dateFilter.type === 'range') return orderDate >= dateFilter.from && orderDate <= dateFilter.to
+    return true
+  })
+}
+
 function analyzeData(orders, query) {
   const q = query.toLowerCase()
   const totalRows = orders.length
@@ -103,7 +145,17 @@ function analyzeData(orders, query) {
     if(sk.length>0){const o=totalBrut>0?((sk[0][1].brut/totalBrut)*100).toFixed(1):0;result.insights.push({type:'success',title:'Lider: '+sk[0][0],description:fmt(sk[0][1].brut)+' ciro ile toplam\u0131n %'+o+"\'i. "+sk[0][1].count+' kalem.'})}
     if(sk.length>=3){const bot=sk.slice(-3);result.insights.push({type:'recommendation',title:'D\u00fc\u015f\u00fck Kategoriler',description:bot.map(([n,d])=>n+' ('+fmt(d.brut)+')').join(', ')+'. Cross-sell f\u0131rsatlar\u0131 de\u011ferlendirilmeli.'})}
   } else {
-    result.insights.push({type:'info',title:'PM Aktif: '+dateRange,description:fmtN(uniqueOrders)+' sipari\u015f, '+fmtN(totalRows)+' kalem, '+fmt(totalBrut)+' br\u00fct ciro. "Genel rapor", "iptal analizi", "bayi performans" veya "kategori da\u011f\u0131l\u0131m\u0131" deneyin.'})
+    // FALLBACK: Tanınmayan sorguları genel rapor gibi değerlendir
+    const tam=karsilanmaMap['Tam kar\u015f\u0131lanan sipari\u015f']||0
+    result.kpis=[
+      {label:'Sipari\u015f',value:fmtN(uniqueOrders),sub:fmtN(totalRows)+' kalem',icon:'orders',color:'#0d9264'},
+      {label:'Br\u00fct Ciro',value:fmt(totalBrut),sub:'Toplam',icon:'revenue',color:'#0891b2'},
+      {label:'Bayi',value:activeBayis.toString(),sub:plasiyerSayisi+' plasiyer',icon:'dealers',color:'#2563eb'},
+      {label:'Teslim',value:avgTeslim+' g\u00fcn',sub:'Ortalama',icon:'delivery',color:'#0891b2'},
+    ]
+    result.charts.push({type:'pie',title:'Onay Durumu',data:Object.entries(onayMap).map(([n,v])=>({name:n,value:v}))})
+    result.insights.push({type:'info',title:'PM Aktif: '+dateRange,description:fmtN(uniqueOrders)+' sipari\u015f, '+fmtN(totalRows)+' kalem, '+fmt(totalBrut)+' br\u00fct ciro.'})
+    result.insights.push({type:'recommendation',title:'Daha detayl\u0131 analiz i\u00e7in',description:'"Genel rapor", "iptal analizi", "bayi performans" veya "kategori da\u011f\u0131l\u0131m\u0131" komutlar\u0131n\u0131 deneyebilirsiniz.'})
   }
   return result
 }
@@ -168,15 +220,38 @@ export default function PmAktif({initialQuery,onBack,isMobile,onMenuOpen}) {
         setLoading(false); return
       }
 
-      const ruleResult=analyzeData(orders,query)
-      const dataContext=prepareDataContext(orders)
+      // Date filtering
+      const dateFilter = parseDateFilter(query)
+      const filteredOrders = filterOrdersByDate(orders, dateFilter)
+      
+      if(filteredOrders.length === 0 && dateFilter) {
+        setMessages([...newMsgs,{role:'assistant',content:{insights:[{type:'warning',title:dateFilter.label + ' için veri bulunamadı',description:'Bu tarihte sipariş kaydı yok. Farklı bir tarih veya "genel rapor" deneyin.'}]}}])
+        setLoading(false); return
+      }
+
+      const workingOrders = filteredOrders.length > 0 ? filteredOrders : orders
+      const ruleResult=analyzeData(workingOrders,query)
+      
+      // Add date filter info to insights if filtered
+      if(dateFilter && filteredOrders.length > 0 && filteredOrders.length < orders.length) {
+        ruleResult.insights.unshift({type:'info',title:'Tarih Filtresi: ' + dateFilter.label, description: 'Toplam ' + orders.length + ' kalemden ' + filteredOrders.length + ' kalem bu tarihe ait.'})
+      }
+
+      const dataContext=prepareDataContext(workingOrders)
       const aiResult=await getAIInsight(dataContext,query)
+
+      // Always show rule-based insights, merge AI insights as bonus
+      const allInsights = [...(ruleResult.insights || [])]
+      if (aiResult?.insights?.length) {
+        aiResult.insights.forEach(ai => {
+          if (!allInsights.find(r => r.title === ai.title)) allInsights.push(ai)
+        })
+      }
 
       setMessages([...newMsgs,{role:'assistant',content:{
         kpis:ruleResult.kpis, charts:ruleResult.charts, dateRange:ruleResult.dateRange,
-        insights:aiResult?.insights||ruleResult.insights||[],
+        insights:allInsights,
         aiSummary:aiResult?.summary||null, isAI:!!aiResult,
-        aiUnavailable:!aiResult,
       }}])
     } catch(err) {
       setMessages([...newMsgs,{role:'assistant',content:{insights:[{type:'critical',title:'Hata',description:err.message}]}}])
